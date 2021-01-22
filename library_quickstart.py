@@ -178,4 +178,6 @@ model = pt_model
 tokenizer.save_pretrained(save_directory)
 model.save_pretrained(save_directory)
 
+    # This saves tokenizer, model, config files, and vocab to 
+        # your save directory (hf_models in this repo).
 
