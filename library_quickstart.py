@@ -181,3 +181,54 @@ model.save_pretrained(save_directory)
     # This saves tokenizer, model, config files, and vocab to 
         # your save directory (hf_models in this repo).
 
+
+"""Load Tokenizer and Model"""
+
+# Call model and tokenizer same as before, but now from the save_directory
+
+model = AutoModelForSequenceClassification.from_pretrained(save_directory)
+tokenizer = AutoTokenizer.from_pretrained(save_directory)
+
+# Load PyTorch from TensorFlowF (from_pt=True)
+    # (You need a TF model saved to run this block)
+
+# from transformers import TFAutoModelForSequenceClassification
+# model = TFAutoModelForSequenceClassification.from_pretrained(save_directory, from_pt=True)
+    
+    
+# Load TensorFlow from Pytorch (from_tf=True):
+    # (You need a TF model saved to run this block)
+
+# model = AutoModelForSequenceClassification.from_pretrained(save_directory, from_tf=True)
+
+"""Return hidden states and all attention weights"""
+pt_outputs = pt_model(**pt_batch, output_hidden_states=True, output_attentions=True)
+all_hidden_states, all_attentions = pt_outputs[-2:]
+
+
+"""Accessing Specific Models"""
+
+from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
+model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+model = DistilBertForSequenceClassification.from_pretrained(model_name)
+tokenizer = DistilBertTokenizer.from_pretrained(model_name)
+
+
+"""Customizing the Model"""
+
+# You can pass a model config class instance to a model use class instance 
+
+from transformers import DistilBertConfig, DistilBertTokenizer, DistilBertForSequenceClassification
+config = DistilBertConfig(n_heads=8, dim=512, hidden_dim=4*512)
+tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
+model = DistilBertForSequenceClassification(config)
+
+
+# You can also pass a change directly to from_pretrained instead of changing a whole config class.
+            # In this case you want to add a 10 label classifier to the body of a pretrained model. 
+   
+from transformers import DistilBertConfig, DistilBertTokenizer, DistilBertForSequenceClassification
+model_name = "distilbert-base-uncased"
+model = DistilBertForSequenceClassification.from_pretrained(model_name, num_labels=10)
+tokenizer = DistilBertTokenizer.from_pretrained(model_name)
+
