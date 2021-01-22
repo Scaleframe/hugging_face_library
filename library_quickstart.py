@@ -67,7 +67,7 @@ pt_model = AutoModelForSequenceClassification.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 
-"""Using Tokeinzer"""
+"""Using Tokeninzer"""
 
 # Note: Several rules can be applied to different tokenizers. 
 # More details at tokeninzer summary: 
@@ -83,7 +83,7 @@ inputs = tokenizer("We are very happy to show you the 🤗 Transformers library.
 """Attention mask""" # shows you what the model should attend to, in case of padding. 
 # 1 for yes attend, 0 for no, this is just padding. 
 
-"""More on tokens / inputs: (From Glossary, Attention Mask)"""
+"""<SIDEBAR>: More on tokens / inputs: (From Glossary, Attention Mask)"""
 
 """Token Type ID's:""" 
 
@@ -92,13 +92,13 @@ inputs = tokenizer("We are very happy to show you the 🤗 Transformers library.
 
 """Tokenizer joining multiple sentences as single sequence"""
 from transformers import BertTokenizer
-tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
+bert_tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 
 sequence_a = "Hugging Face is based in NYC"
 sequence_b = "Where is Hugging Face based?"
 
-encoded_dict = tokenizer(sequence_a, sequence_b)
-decoded = tokeninzer.decode(encoded_dict["input_ids"])
+encoded_dict = bert_tokenizer(sequence_a, sequence_b)
+decoded = bert_tokenizer.decode(encoded_dict["input_ids"])
 
 
 print(decoded)
@@ -109,7 +109,7 @@ encoded_dict['token_type_ids']
 # [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
 
-"""Back to overview"""
+"""Back to overview <END SIDEBAR>"""
 
 """Passing sentence to tokenizer"""
 
@@ -131,5 +131,51 @@ pt_batch = tokenizer(
 
 
     # Padding will be applied on the side the model would expect and using the padding token the model was pretrained with. Attention mask is updated as well. 
+
+
+"""Using a model"""
+
+"""Get final activations (pre SoftMax)"""
+
+pt_outputs = pt_model(**pt_batch)
+
+     # In 🤗 Transformers, all outputs are tuples (with only one element potentially). 
+        # Here, we get a tuple with just the final activations of the model.
+
+    # pt_outputs: SequenceClassifierOutput(loss=None, logits=tensor([[-4.0833,  4.3364],
+        # [-0.8004,  0.7992]], grad_fn=<AddmmBackward>), hidden_states=None, attentions=None)
+
+
+    # note: All 🤗 Transformer models return activations PRE final activation function since
+        # the final activation function is often fused with the loss. (ie: SoftMax)
+
+"""Get predicitons (post SoftMax)"""
+
+import torch.nn.functional as F
+pt_predictions = F.softmax(pt_outputs[0], dim=-1)
+
+# pt_predictions: 
+    # tensor([[2.2043e-04, 9.9978e-01],
+    #         [1.6804e-01, 8.3196e-01]], grad_fn=<SoftmaxBackward>)
+
+"""Add labels"""
+
+import torch
+pt_outputs = pt_model(**pt_batch, labels = torch.tensor([1,0]))
+
+    # Loss data is added here:
+    # SequenceClassifierOutput(loss=tensor(0.8919, grad_fn=<NllLossBackward>), logits=tensor([[-4.0833,  4.3364],
+        # [-0.8004,  0.7992]], grad_fn=<AddmmBackward>), hidden_states=None, attentions=None)
+
+    # Note: output class gives you auto complete in an ide, and you can also index with string or int. 
+        #  Pretty sweet!
+
+"""Save Tokenizer and Model"""
+
+save_directory = 'hf_models'
+tokenizer = tokenizer
+model = pt_model
+tokenizer.save_pretrained(save_directory)
+model.save_pretrained(save_directory)
 
 
